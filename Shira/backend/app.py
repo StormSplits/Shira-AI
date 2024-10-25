@@ -47,7 +47,7 @@ def chat():
             ai_data = {
                 "model": "dolphin-llama3",
                 "messages": [
-                    {"role": "system", "content": "You are a helpful assistant. Provide your response in Markdown language."},
+                    {"role": "system", "content": "Your name is Shira an helpful AI assistant, developed by Galactic ARK. Provide your response in Markdown language."},
                     {"role": "user", "content": user_message}
                 ]
             }
