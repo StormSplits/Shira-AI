@@ -15,18 +15,37 @@ type ChatSession = {
   messages: Message[];
 };
 
+const STORAGE_KEY = 'chatSessions';
+const CURRENT_SESSION_KEY = 'currentSession';
+
 export default function AIAssistantUI() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [input, setInput] = useState('')
-  const [currentSession, setCurrentSession] = useState<ChatSession>({ id: Date.now(), title: 'New Chat', messages: [] })
-  const [chatSessions, setChatSessions] = useState<ChatSession[]>([])
+  const [currentSession, setCurrentSession] = useState<ChatSession>(() => {
+    const savedSession = localStorage.getItem(CURRENT_SESSION_KEY);
+    return savedSession ? JSON.parse(savedSession) : { id: Date.now(), title: 'New Chat', messages: [] };
+  })
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>(() => {
+    const savedSessions = localStorage.getItem(STORAGE_KEY);
+    return savedSessions ? JSON.parse(savedSessions) : [];
+  })
   const [showExamples, setShowExamples] = useState(true)
   const [webAccessEnabled, setWebAccessEnabled] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [editingSessionId, setEditingSessionId] = useState<number | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Save sessions to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(chatSessions));
+  }, [chatSessions]);
+
+  // Save current session to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(CURRENT_SESSION_KEY, JSON.stringify(currentSession));
+  }, [currentSession]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
@@ -83,7 +102,6 @@ export default function AIAssistantUI() {
       updateChatSessions(finalUpdatedSession)
     } catch (error) {
       console.error('Error sending message:', error)
-      // Handle error (e.g., show an error message to the user)
     } finally {
       setIsLoading(false)
     }
@@ -120,7 +138,8 @@ export default function AIAssistantUI() {
     if (currentSession.messages.length > 0) {
       updateChatSessions(currentSession)
     }
-    setCurrentSession({ id: Date.now(), title: 'New Chat', messages: [] })
+    const newSession = { id: Date.now(), title: 'New Chat', messages: [] };
+    setCurrentSession(newSession)
     setShowExamples(true)
   }
 
